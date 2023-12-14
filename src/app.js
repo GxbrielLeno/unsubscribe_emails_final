@@ -1,43 +1,41 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs').promises;
-const path = require('path');
+const { Pool } = require('pg');
 const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-const emailsFilePath = '/tmp/unsubscribe_emails.json';
+const pool = new Pool({
+  connectionString: 'postgresql://GxbrielLeno:mcbg0pOvK6ux@ep-sweet-art-93850706.us-east-2.aws.neon.tech/lista_negra_email?sslmode=require',
+  ssl: {
+    rejectUnauthorized: false, // Para evitar erros relacionados a certificados SSL em alguns ambientes.
+  },
+});
 
-app.post('/unsubscribe', async (req, res) => {
+app.post('/unsubscribe', (req, res) => {
   const userEmail = req.body.email;
 
   if (userEmail) {
-    try {
-      // Lê os e-mails já existentes, se houver
-      const existingEmails = JSON.parse(await fs.readFile(emailsFilePath, 'utf-8'));
+    const insertQuery = 'INSERT INTO tabela_emails (email) VALUES ($1)';
 
-      // Adiciona o novo e-mail à lista
-      existingEmails.push({ email: userEmail });
-
-      // Salva a lista atualizada no arquivo
-      await fs.writeFile(emailsFilePath, JSON.stringify(existingEmails));
-
-      console.log(`E-mail ${userEmail} adicionado à lista.`);
-      res.send('Você foi removido da lista de e-mails.');
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Erro ao processar a solicitação.');
-    }
+    pool.query(insertQuery, [userEmail], (err) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Erro ao processar a solicitação.');
+      } else {
+        console.log(`E-mail ${userEmail} adicionado ao banco de dados.`);
+        res.send('Você foi removido da lista de e-mails.');
+      }
+    });
   } else {
     res.status(400).send('Endereço de e-mail inválido.');
   }
 });
 
-app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+app.listen(3333, () => {
+  console.log(`Rodando na porta 3333`);
 });
