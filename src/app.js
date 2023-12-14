@@ -4,7 +4,6 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const cors = require('cors'); // Adicione esta linha
 
 const app = express();
-const port = 3000;
 
 app.use(cors()); // Adicione esta linha para habilitar o CORS
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -35,6 +34,6 @@ app.post('/unsubscribe', (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+app.listen(3333, () => {
+  console.log(`rodando`);
 });
