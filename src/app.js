@@ -16,8 +16,8 @@ const pool = new Pool({
   },
 });
 
-app.post('/unsubscribe', (req, res) => {
-  const userEmail = req.body.email;
+app.get('/unsubscribe', (req, res) => {
+  const userEmail = req.query.email;
 
   if (userEmail) {
     const insertQuery = 'INSERT INTO tabela_emails (email) VALUES ($1)';
